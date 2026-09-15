@@ -183,6 +183,15 @@ class CrosswordCreator():
         """
         raise NotImplementedError
 
+        # returns true if x is higher priority than y. Both are variables.
+    def compare(self,x,y):
+        if len(self.domains[x]) < len(self.domains[y]):
+            return True
+        elif len(self.domains[x]) == len(self.domains[y]):
+            if len(self.neigbors[x]) > len[self.neighbors[y]]:
+                return True
+        return False
+    
     def select_unassigned_variable(self, assignment):
         """
         Return an unassigned variable not already part of `assignment`.
@@ -196,7 +205,7 @@ class CrosswordCreator():
             if assignment.get(var) == None:
                 if best == None:
                     best = var
-                elif compare(var, best) == True: # TODO: write conpare function
+                elif self.compare(var, best) == True:
                     best = var
         return best
                 

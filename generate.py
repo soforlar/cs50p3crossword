@@ -119,8 +119,9 @@ class CrosswordCreator():
             for wordx in self.domains[x]:
                 possible = False
                 for wordy in self.domains[y]:
-                    #TODO: if overlap is the same letter for both words
-                    
+                    #if overlap is the same letter for both words
+                    # if x.cells[overlap[0]] == y.cells[overlap[1]]: # nope, cells are (i,j) not letters.
+                    if wordx[overlap[0]] == wordy[overlap[1]]:
                         possible = True
                 if possible == False:
                     self.domains[x].discard(wordx)
@@ -137,21 +138,41 @@ class CrosswordCreator():
         Return True if arc consistency is enforced and no domains are empty;
         return False if one or more domains end up empty.
         """
-        raise NotImplementedError
+
+        # If `arcs` is None, begin with initial list of all arcs in the problem.
+        if arcs == None:
+            for x,y in vars:
+                if self.overlap[x][y] != None:
+                    arcs.append(x,y) # FIXME: assuming this is a collections.deque
+        while len(arcs) != 0:
+            (x, y) = arcs.popleft() # FIXME: assuming this is a collections.deque
+            if self.revise(x, y):
+                if len(self.domains[x]):
+                    return False
+                for z in x.neighbors - {y}:
+                    arcs.append((z,x))
 
     def assignment_complete(self, assignment):
         """
         Return True if `assignment` is complete (i.e., assigns a value to each
         crossword variable); return False otherwise.
         """
-        raise NotImplementedError
+        for x in vars:
+            if assignment.get(x) == None: # use get so if there is no mapping for x, doesn't crash program, just returns none
+                return False
+        return True
 
     def consistent(self, assignment):
         """
         Return True if `assignment` is consistent (i.e., words fit in crossword
         puzzle without conflicting characters); return False otherwise.
         """
-        raise NotImplementedError
+        for x,y in vars:
+            overlap = self.overlap[x][y] # returns (i,j) that overlaps
+            if overlap != None:
+                if assignment[x][overlap[0]] != assignment[y][overlap[1]]:
+                    return False
+        return True
 
     def order_domain_values(self, var, assignment):
         """
@@ -170,6 +191,16 @@ class CrosswordCreator():
         degree. If there is a tie, any of the tied variables are acceptable
         return values.
         """
+        best = None # return None if there sre no unassigned vars
+        for var in vars:
+            if assignment.get(var) == None:
+                if best == None:
+                    best = var
+                elif compare(var, best) == True: # TODO: write conpare function
+                    best = var
+        return best
+                
+        
         raise NotImplementedError
 
     def backtrack(self, assignment):

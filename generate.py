@@ -212,13 +212,17 @@ class CrosswordCreator():
         return best
                 
         
-    def deepcopy(obj):
-        if isinstance(obj, dict):
-            return {key: deepcopy(value) for key, value in obj.items()}
-        elif isinstance(obj, list):
-            return [deepcopy(item) for item in obj]
-        else:
-            return obj
+    def inference(assignment, removed):
+        """inference should record every removed (variable, word) pair"""
+        #TODO
+        removed.append((variable, word))
+        self.domains[variable].remove(word)
+        #FIXME: not sure how to do this because i can't modify ac3. 
+        # I think this is the root of my problem, that I can't keep track when I go into ac3
+        #it would be easy to keep track of removed items if I could go pass removed into qc3
+
+        raise NotImplementedError
+        
 
     def backtrack(self, assignment):
         """
@@ -232,25 +236,21 @@ class CrosswordCreator():
         if self.assignment_complete(assignment):
             return assignment
         var = self.select_unassigned_variable(assignment)
-        for value in self.domains[var]:
+        for value in self.order_domain_values(var, assignment):
             assignment[var] = value
+            removed = []
             #if value consistent with assignment:
             if self.consistent(assignment):
-                trial = self.deep_copy(assignment)
-                #  inferences = self.inference(assignment)
+                if self.inference(assignment, removed):
                 #if inferences != failure, add inferences to assignment 
-                if self.ac3(trial) == None: #FIXME expects arcs not a dictionary
-                    return None #FIXME: fully abamdons attempt instead of trying the nex t branch
-                result = self.backtrack(trial)
-                if result != None:
-                    return result
-                #TODO:remove inferences from assignment
+                    result = self.backtrack(assignment)
+                    if result != None:
+                        return result
+                #remove domains and inferences from assignment
+                for variable, word in removed:
+                    self.domains[variable].aee(word)
             del (assignment[var])
-            #ToDO: resture domains
         return None
-
-
-        raise NotImplementedError
 
 
 def main():

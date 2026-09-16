@@ -181,6 +181,8 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
+        values= []
+        
         raise NotImplementedError
 
         # returns true if x is higher priority than y. Both are variables.
@@ -221,6 +223,25 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
+        if self.assignment_complete(assignment):
+            return assignment
+        var = self.select_unassigned_variable(assignment)
+        for value in self.domains[var]:
+            assignment[var] = value
+            #if value consistent with assignment:
+            if self.consistent(assignment):
+                #TODO:  inferences = self.inference(assignment)
+                #TODO:if inferences != failure, add inferences to assignment
+                if self.revise
+                if self.ac3
+                result = self.backtrack(assignment)
+                if result != None:
+                    return result
+                #TODO:remove inferences from assignment
+            assignment[var] = None
+        return None
+
+
         raise NotImplementedError
 
 

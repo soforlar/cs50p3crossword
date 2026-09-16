@@ -100,9 +100,9 @@ class CrosswordCreator():
          constraints; in this case, the length of the word.)
         """
         for var in self.crossword.variables:
-            for word in self.domains[var]: #domains is a dictionary mapping each variable to a set of possible words.
+            for word in set(self.domains[var]):
                 if var.length != len(word):
-                    self.domains[var].discard(word) #what type is self.domains.var? A set
+                    self.domains[var].discard(word)
 
     def revise(self, x, y):
         """
@@ -116,7 +116,7 @@ class CrosswordCreator():
         revised = False
         overlap = self.overlap[x][y] # returns (i,j) that overlaps
         if overlap != None:
-            for wordx in self.domains[x]:
+            for wordx in set(self.domains[x]):
                 possible = False
                 for wordy in self.domains[y]:
                     #if overlap is the same letter for both words

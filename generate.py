@@ -181,9 +181,26 @@ class CrosswordCreator():
         The first value in the list, for example, should be the one
         that rules out the fewest values among the neighbors of `var`.
         """
-        values= []
-        
-        raise NotImplementedError
+
+        def ruled_out(value):
+            #feels kinda repetitive to what I was doing in other functions...
+            total = 0
+            for neighbor in neighbors:
+                overlap = self.crossword.overlaps[var, neighbor]
+                total += sum(
+                    word[overlap[1]] != value[overlap[0]]
+                    for word in self.domains[neighbor]
+                        )
+                return total
+            
+        values = list(self.domains[var])
+        neighbors = [
+            neighbor
+            for neighbor in self.crossword.neighbors(var)
+            if neighbor not in assignment
+        ]
+        values.sort(key=ruled_out) # am I allowed to use this function or should I write
+        return values
 
         # returns true if x is higher priority than y. Both are variables.
     def compare(self,x,y):
@@ -237,9 +254,7 @@ class CrosswordCreator():
                     result = self.backtrack(assignment)
                     if result != None:
                         return result
-                #remove domains and inferences from assignment
-                for variable, word in removed:
-                    self.domains[variable].aee(word)
+                #remove domains from assignment
             del (assignment[var])
         return None
 

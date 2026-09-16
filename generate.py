@@ -147,7 +147,7 @@ class CrosswordCreator():
         while len(arcs) != 0:
             (x, y) = arcs.popleft() # FIXME: assuming this is a collections.deque
             if self.revise(x, y):
-                if len(self.domains[x]):
+                if len(self.domains[x]) == 0:
                     return False
                 for z in x.neighbors - {y}:
                     arcs.append((z,x))
@@ -212,7 +212,13 @@ class CrosswordCreator():
         return best
                 
         
-        raise NotImplementedError
+    def deepcopy(obj):
+        if isinstance(obj, dict):
+            return {key: deepcopy(value) for key, value in obj.items()}
+        elif isinstance(obj, list):
+            return [deepcopy(item) for item in obj]
+        else:
+            return obj
 
     def backtrack(self, assignment):
         """
@@ -230,15 +236,17 @@ class CrosswordCreator():
             assignment[var] = value
             #if value consistent with assignment:
             if self.consistent(assignment):
-                #TODO:  inferences = self.inference(assignment)
-                #TODO:if inferences != failure, add inferences to assignment
-                if self.revise
-                if self.ac3
-                result = self.backtrack(assignment)
+                trial = self.deep_copy(assignment)
+                #  inferences = self.inference(assignment)
+                #if inferences != failure, add inferences to assignment 
+                if self.ac3(trial) == None: #FIXME expects arcs not a dictionary
+                    return None #FIXME: fully abamdons attempt instead of trying the nex t branch
+                result = self.backtrack(trial)
                 if result != None:
                     return result
                 #TODO:remove inferences from assignment
-            assignment[var] = None
+            del (assignment[var])
+            #ToDO: resture domains
         return None
 
 

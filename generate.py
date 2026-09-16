@@ -212,17 +212,6 @@ class CrosswordCreator():
         return best
                 
         
-    def inference(assignment, removed):
-        """inference should record every removed (variable, word) pair"""
-        #TODO
-        removed.append((variable, word))
-        self.domains[variable].remove(word)
-        #FIXME: not sure how to do this because i can't modify ac3. 
-        # I think this is the root of my problem, that I can't keep track when I go into ac3
-        #it would be easy to keep track of removed items if I could go pass removed into qc3
-
-        raise NotImplementedError
-        
 
     def backtrack(self, assignment):
         """
@@ -233,16 +222,18 @@ class CrosswordCreator():
 
         If no assignment is possible, return None.
         """
+        # note: I tried to add inferences interleaved with the backtracking
+        # but without modifying something I am not allowed to modify.
+        # If you call ac3() during recursion, 
+        # restoration is impossible without either 
+        # copying domains or recording removals somewhere. 
+        # Once AC-3 deletes values, that information is lost.
         if self.assignment_complete(assignment):
             return assignment
         var = self.select_unassigned_variable(assignment)
-        for value in self.order_domain_values(var, assignment):
+        for value in self.domains[var]:
             assignment[var] = value
-            removed = []
-            #if value consistent with assignment:
             if self.consistent(assignment):
-                if self.inference(assignment, removed):
-                #if inferences != failure, add inferences to assignment 
                     result = self.backtrack(assignment)
                     if result != None:
                         return result

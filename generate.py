@@ -114,7 +114,7 @@ class CrosswordCreator():
         False if no revision was made.
         """
         revised = False
-        overlap = self.overlap[x][y] # returns (i,j) that overlaps
+        overlap = self.crossword.overlaps[x,y] # returns (i,j) that overlaps
         if overlap != None:
             for wordx in set(self.domains[x]):
                 possible = False
@@ -141,9 +141,11 @@ class CrosswordCreator():
 
         # If `arcs` is None, begin with initial list of all arcs in the problem.
         if arcs == None:
-            for x,y in vars:
-                if self.overlap[x][y] != None:
-                    arcs.append(x,y) # FIXME: assuming this is a collections.deque
+             for var in self.crossword.variables:
+                for x in set(self.domains[var]):
+                    for y in set(self.domains[var]):
+                        if self.crossword.overlaps[x,y] != None:
+                             arcs.append(x,y) # FIXME: assuming this is a collections.deque
         while len(arcs) != 0:
             (x, y) = arcs.popleft() # FIXME: assuming this is a collections.deque
             if self.revise(x, y):
@@ -157,7 +159,7 @@ class CrosswordCreator():
         Return True if `assignment` is complete (i.e., assigns a value to each
         crossword variable); return False otherwise.
         """
-        for x in vars:
+        for x in set(self.domains):
             if assignment.get(x) == None: # use get so if there is no mapping for x, doesn't crash program, just returns none
                 return False
         return True
@@ -167,11 +169,13 @@ class CrosswordCreator():
         Return True if `assignment` is consistent (i.e., words fit in crossword
         puzzle without conflicting characters); return False otherwise.
         """
-        for x,y in vars:
-            overlap = self.overlap[x][y] # returns (i,j) that overlaps
-            if overlap != None:
-                if assignment[x][overlap[0]] != assignment[y][overlap[1]]:
-                    return False
+        for var in self.crossword.variables:
+            for x in set(self.domains[var]):
+                for y in set(self.domains[var]):
+                    overlap = self.overlap[x][y] # returns (i,j) that overlaps
+                    if overlap != None:
+                        if assignment[x][overlap[0]] != assignment[y][overlap[1]]:
+                            return False
         return True
 
     def order_domain_values(self, var, assignment):

@@ -140,18 +140,19 @@ class CrosswordCreator():
         """
 
         # If `arcs` is None, begin with initial list of all arcs in the problem.
+        
         if arcs == None:
+             arcs = list()
              for var in self.crossword.variables:
-                for x in set(self.domains[var]):
-                    for y in set(self.domains[var]):
-                        if self.crossword.overlaps[x,y] != None:
-                             arcs.append(x,y) # FIXME: assuming this is a collections.deque
+                for var2 in self.crossword.neighbors(var):
+                    arcs.append((var,var2))
+
         while len(arcs) != 0:
-            (x, y) = arcs.popleft() # FIXME: assuming this is a collections.deque
+            (x, y) = arcs.pop(0) 
             if self.revise(x, y):
                 if len(self.domains[x]) == 0:
                     return False
-                for z in x.neighbors - {y}:
+                for z in self.crossword.neighbors(x) - {y}:
                     arcs.append((z,x))
 
     def assignment_complete(self, assignment):
@@ -170,12 +171,13 @@ class CrosswordCreator():
         puzzle without conflicting characters); return False otherwise.
         """
         for var in self.crossword.variables:
-            for x in set(self.domains[var]):
-                for y in set(self.domains[var]):
-                    overlap = self.overlap[x][y] # returns (i,j) that overlaps
-                    if overlap != None:
-                        if assignment[x][overlap[0]] != assignment[y][overlap[1]]:
-                            return False
+            if var not in assignment:
+                continue
+            for neighbor in self.crossword.neighbors(var):
+                if neighbor in assignment:
+                    overlap = self.crossword.overlaps[var, neighbor]
+                    if assignment[var][overlap[0]] != assignment[neighbor][overlap[1]]:
+                        return False
         return True
 
     def order_domain_values(self, var, assignment):
@@ -211,7 +213,7 @@ class CrosswordCreator():
         if len(self.domains[x]) < len(self.domains[y]):
             return True
         elif len(self.domains[x]) == len(self.domains[y]):
-            if len(self.neigbors[x]) > len[self.neighbors[y]]:
+            if len(self.crossword.neighbors(x)) > len(self.crossword.neighbors(y)):
                 return True
         return False
     
@@ -224,9 +226,9 @@ class CrosswordCreator():
         return values.
         """
         best = None # return None if there sre no unassigned vars
-        for var in vars:
-            if assignment.get(var) == None:
-                if best == None:
+        for var in set(self.crossword.variables):
+            if assignment.get(var) is None:
+                if best is None:
                     best = var
                 elif self.compare(var, best) == True:
                     best = var
